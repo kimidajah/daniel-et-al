@@ -17,9 +17,38 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        $guru = User::factory()->create([
+            'name' => 'Budi Guru',
+            'email' => 'guru@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'guru',
+        ]);
+
+        \App\Models\TeacherProfile::create([
+            'user_id' => $guru->id,
+            'nip' => '198701022010121003',
+            'subject' => 'Matematika',
+        ]);
+
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Andi Piket',
+            'email' => 'piket@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'piket',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Siti TU',
+            'email' => 'tu@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'tu',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Rahmat Kepsek',
+            'email' => 'kepala@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'kepala_sekolah',
         ]);
     }
 }

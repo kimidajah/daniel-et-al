@@ -7,7 +7,7 @@
 <div class="dashboard-grid">
     <div class="widget-card">
         <div class="widget-title">Total Guru Terdaftar</div>
-        <div class="widget-value" style="color: var(--color-accent);">{{ $totalTeachers }} Guru</div>
+        <div class="widget-value" style="color: var(--color-accent);" id="widget-total-teachers">{{ $totalTeachers }} Guru</div>
     </div>
     <div class="widget-card">
         <div class="widget-title">Guru Hadir (Hari Ini)</div>
@@ -18,6 +18,9 @@
         <div class="widget-value" style="color: var(--color-warning);" id="server-clock">{{ now()->format('H:i:s') }}</div>
     </div>
 </div>
+
+<!-- Alert Box -->
+<div id="crud-alert" class="alert" style="display: none; margin-bottom: 2rem;"></div>
 
 <!-- QR Generator Section -->
 <div class="section-card">
@@ -49,26 +52,36 @@
 </div>
 
 <div class="form-row">
-    <!-- Form Kelola Guru (Tambah Guru) -->
-    <div class="section-card">
-        <div class="section-title">
+    <!-- Form Kelola Guru (Tambah / Edit Guru) -->
+    <div class="section-card" id="form-teacher-card">
+        <div class="section-title" id="form-card-title">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
             Tambah Guru Baru
         </div>
-        <form action="#" method="POST" onsubmit="alert('Data Guru disimulasikan berhasil disimpan.'); return false;">
+        <form id="form-teacher">
+            <input type="hidden" id="teacher-id" value="">
+            
             <div class="form-group">
                 <label class="form-label">Nama Lengkap</label>
-                <input type="text" class="form-control" placeholder="Contoh: Dr. H. Ahmad Fauzi, M.Pd" required>
+                <input type="text" class="form-control" id="teacher-name" placeholder="Contoh: Dr. H. Ahmad Fauzi, M.Pd" required>
             </div>
             <div class="form-group">
                 <label class="form-label">Alamat Email</label>
-                <input type="email" class="form-control" placeholder="Contoh: ahmad@sekolah.sch.id" required>
+                <input type="email" class="form-control" id="teacher-email" placeholder="Contoh: ahmad@sekolah.sch.id" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">NIP (Nomor Induk Pegawai)</label>
+                <input type="text" class="form-control" id="teacher-nip" placeholder="Contoh: 198701022010121003">
             </div>
             <div class="form-group">
                 <label class="form-label">Mata Pelajaran / Bidang</label>
-                <input type="text" class="form-control" placeholder="Contoh: Matematika" required>
+                <input type="text" class="form-control" id="teacher-subject" placeholder="Contoh: Matematika" required>
             </div>
-            <button type="submit" class="btn btn-primary">Simpan Data Guru</button>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" id="btn-submit-teacher" class="btn btn-primary">Simpan Data Guru</button>
+                <button type="button" id="btn-cancel-edit" class="btn btn-danger" style="display: none; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); box-shadow: none;">Batal</button>
+            </div>
         </form>
     </div>
 
@@ -78,25 +91,50 @@
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
             Daftar Guru Terdaftar
         </div>
-        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-            <table class="custom-table">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="custom-table" id="table-teachers">
                 <thead>
                     <tr>
-                        <th>Nama</th>
+                        <th>Nama / NIP</th>
                         <th>Email</th>
                         <th>Bidang</th>
+                        <th style="width: 120px; text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($teachers as $teacher)
-                    <tr>
-                        <td style="font-weight: 600;">{{ $teacher->name }}</td>
+                    <tr id="teacher-row-{{ $teacher->id }}">
+                        <td>
+                            <div style="font-weight: 600;">{{ $teacher->name }}</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">
+                                NIP: {{ $teacher->teacherProfile->nip ?? '-' }}
+                            </div>
+                        </td>
                         <td>{{ $teacher->email }}</td>
                         <td>{{ $teacher->teacherProfile->subject ?? '-' }}</td>
+                        <td>
+                            <div class="action-buttons" style="justify-content: center;">
+                                <button class="btn btn-sm btn-primary btn-edit-teacher" 
+                                    data-id="{{ $teacher->id }}"
+                                    data-name="{{ $teacher->name }}"
+                                    data-email="{{ $teacher->email }}"
+                                    data-nip="{{ $teacher->teacherProfile->nip ?? '' }}"
+                                    data-subject="{{ $teacher->teacherProfile->subject ?? '' }}"
+                                    style="padding: 0.3rem 0.6rem;">
+                                    Edit
+                                </button>
+                                <button class="btn btn-sm btn-danger btn-delete-teacher" 
+                                    data-id="{{ $teacher->id }}"
+                                    data-name="{{ $teacher->name }}"
+                                    style="padding: 0.3rem 0.6rem;">
+                                    Hapus
+                                </button>
+                            </div>
+                        </td>
                     </tr>
                     @empty
-                    <tr>
-                        <td colspan="3" style="text-align: center; color: var(--text-secondary);">Belum ada data guru.</td>
+                    <tr class="empty-teacher-row">
+                        <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 2rem;">Belum ada data guru.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -110,6 +148,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Elements for QR Code
     const btnGenerate = document.getElementById('btn-generate-qr');
     const qrPlaceholder = document.getElementById('qr-placeholder');
     const qrCanvas = document.getElementById('qr-canvas');
@@ -117,8 +156,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const timerVal = document.getElementById('qr-timer');
     const serverClock = document.getElementById('server-clock');
 
+    // Elements for CRUD Guru
+    const formTeacher = document.getElementById('form-teacher');
+    const teacherIdInput = document.getElementById('teacher-id');
+    const teacherNameInput = document.getElementById('teacher-name');
+    const teacherEmailInput = document.getElementById('teacher-email');
+    const teacherNipInput = document.getElementById('teacher-nip');
+    const teacherSubjectInput = document.getElementById('teacher-subject');
+    
+    const cardTitle = document.getElementById('form-card-title');
+    const btnSubmitTeacher = document.getElementById('btn-submit-teacher');
+    const btnCancelEdit = document.getElementById('btn-cancel-edit');
+    const alertBox = document.getElementById('crud-alert');
+
     let countdownInterval = null;
     let qrGenerator = null;
+
+    // Show dynamic toast alert
+    function showNotification(message, type = 'success') {
+        alertBox.innerText = message;
+        alertBox.style.display = 'flex';
+        if (type === 'success') {
+            alertBox.style.background = 'rgba(16, 185, 129, 0.1)';
+            alertBox.style.borderColor = 'rgba(16, 185, 129, 0.2)';
+            alertBox.style.color = '#34d399';
+        } else {
+            alertBox.style.background = 'rgba(239, 68, 68, 0.1)';
+            alertBox.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+            alertBox.style.color = '#f87171';
+        }
+        
+        // Auto scroll to alert
+        alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        
+        // Hide after 4 seconds
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 4000);
+    }
 
     // Server Real-time Clock
     setInterval(() => {
@@ -170,7 +245,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 timerVal.innerText = "EXPIRED";
                 timerVal.style.color = "var(--color-danger)";
                 qrCanvas.style.opacity = "0.25";
-                alert("QR Code telah kedaluwarsa. Silakan generate yang baru.");
             } else {
                 updateTimerText(remaining);
             }
@@ -205,20 +279,186 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 initQR(data.token);
                 startCountdown(data.expires_in_seconds);
+                showNotification("QR Code absensi berhasil diaktifkan!");
             } else {
-                alert(data.error || "Gagal membuat QR Code.");
+                showNotification(data.error || "Gagal membuat QR Code.", 'error');
             }
         })
         .catch(err => {
             btnGenerate.disabled = false;
             btnGenerate.innerText = "Generate QR Code Baru";
             console.error(err);
-            alert("Terjadi kesalahan jaringan.");
+            showNotification("Terjadi kesalahan jaringan.", 'error');
         });
     });
 
-    // Check on load
+    // Check active QR on load
     checkActiveQR();
+
+    // ============================================
+    // LOGIC CRUD GURU AJAX
+    // ============================================
+
+    // Handle Edit Button Click
+    document.querySelectorAll('.btn-edit-teacher').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const email = this.getAttribute('data-email');
+            const nip = this.getAttribute('data-nip');
+            const subject = this.getAttribute('data-subject');
+
+            // Populate form inputs
+            teacherIdInput.value = id;
+            teacherNameInput.value = name;
+            teacherEmailInput.value = email;
+            teacherNipInput.value = nip;
+            teacherSubjectInput.value = subject;
+
+            // Change form title and buttons
+            cardTitle.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Edit Data Guru`;
+            btnSubmitTeacher.innerText = "Update Data Guru";
+            btnCancelEdit.style.display = 'block';
+
+            // Scroll to the form view
+            document.getElementById('form-teacher-card').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    // Handle Cancel Edit Button Click
+    btnCancelEdit.addEventListener('click', resetForm);
+
+    function resetForm() {
+        formTeacher.reset();
+        teacherIdInput.value = "";
+        
+        cardTitle.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg> Tambah Guru Baru`;
+        btnSubmitTeacher.innerText = "Simpan Data Guru";
+        btnCancelEdit.style.display = 'none';
+    }
+
+    // Handle form submit (Create or Update)
+    formTeacher.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const id = teacherIdInput.value;
+        const isEdit = id !== "";
+        
+        const name = teacherNameInput.value;
+        const email = teacherEmailInput.value;
+        const nip = teacherNipInput.value;
+        const subject = teacherSubjectInput.value;
+
+        btnSubmitTeacher.disabled = true;
+        btnSubmitTeacher.innerText = isEdit ? "Memperbarui..." : "Menyimpan...";
+
+        const url = isEdit ? `/dashboard/tu/guru/${id}` : "/dashboard/tu/guru";
+        const method = "POST"; // we will use PUT method override inside body if editing
+        
+        const requestData = {
+            name: name,
+            email: email,
+            nip: nip,
+            subject: subject
+        };
+
+        if (isEdit) {
+            requestData['_method'] = 'PUT';
+        }
+
+        fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            btnSubmitTeacher.disabled = false;
+            btnSubmitTeacher.innerText = isEdit ? "Update Data Guru" : "Simpan Data Guru";
+
+            if (data.success) {
+                showNotification(data.message);
+                resetForm();
+                // Refresh list cleanly after 1 second
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.error || "Gagal memproses data. Periksa kembali input Anda.", 'error');
+            }
+        })
+        .catch(err => {
+            btnSubmitTeacher.disabled = false;
+            btnSubmitTeacher.innerText = isEdit ? "Update Data Guru" : "Simpan Data Guru";
+            console.error(err);
+            showNotification("Terjadi kesalahan koneksi database.", 'error');
+        });
+    });
+
+    // Handle Delete Button Click
+    document.querySelectorAll('.btn-delete-teacher').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+
+            if (confirm(`Apakah Anda yakin ingin menghapus data guru "${name}"? Tindakan ini akan menghapus seluruh data kehadiran terkait.`)) {
+                this.disabled = true;
+                this.innerText = "...";
+
+                fetch(`/dashboard/tu/guru/${id}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: JSON.stringify({
+                        _method: "DELETE"
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message);
+                        
+                        // Dynamically remove the row with a nice transition
+                        const row = document.getElementById(`teacher-row-${id}`);
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-100px)';
+                        row.style.transition = 'all 0.5s ease';
+                        
+                        setTimeout(() => {
+                            row.remove();
+                            // If table is now empty, append placeholder row
+                            const tableBody = document.querySelector('#table-teachers tbody');
+                            if (tableBody.children.length === 0) {
+                                tableBody.innerHTML = `
+                                    <tr class="empty-teacher-row">
+                                        <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 2rem;">Belum ada data guru.</td>
+                                    </tr>
+                                `;
+                            }
+                            
+                            // Refresh total teacher widget counter
+                            window.location.reload();
+                        }, 500);
+                    } else {
+                        showNotification(data.error || "Gagal menghapus data guru.", 'error');
+                        this.disabled = false;
+                        this.innerText = "Hapus";
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showNotification("Terjadi kesalahan jaringan saat menghapus data.", 'error');
+                    this.disabled = false;
+                    this.innerText = "Hapus";
+                });
+            }
+        });
+    });
 });
 </script>
 @endsection

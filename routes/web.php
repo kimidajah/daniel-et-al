@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\TeacherController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,6 +38,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard/tu', [DashboardController::class, 'tu'])->name('dashboard.tu');
         Route::post('/dashboard/tu/generate-qr', [AttendanceController::class, 'generateQr'])->name('tu.generate-qr');
         Route::get('/dashboard/tu/active-qr', [AttendanceController::class, 'getActiveQr'])->name('tu.active-qr');
+        
+        // CRUD Guru
+        Route::post('/dashboard/tu/guru', [TeacherController::class, 'store'])->name('tu.guru.store');
+        Route::put('/dashboard/tu/guru/{teacher}', [TeacherController::class, 'update'])->name('tu.guru.update');
+        Route::delete('/dashboard/tu/guru/{teacher}', [TeacherController::class, 'destroy'])->name('tu.guru.destroy');
     });
 
     // Route khusus Kepala Sekolah

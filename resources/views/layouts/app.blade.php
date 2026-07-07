@@ -109,8 +109,15 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="main-header">
-                <div class="page-title">@yield('page_title', 'Dashboard')</div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle Sidebar" style="background: none; border: none; color: var(--text-primary); cursor: pointer; display: none; padding: 0.5rem; border-radius: 8px;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                    <div class="page-title">@yield('page_title', 'Dashboard')</div>
+                </div>
+                <div class="header-date" style="font-size: 0.9rem; color: var(--text-secondary);">
                     {{ \Carbon\Carbon::now()->locale('id')->isoFormat('dddd, D MMMM YYYY') }}
                 </div>
             </header>
@@ -120,5 +127,38 @@
             </div>
         </main>
     </div>
+
+    <!-- Toggle Sidebar JS for Mobile -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        
+        if (toggleBtn && sidebar) {
+            const overlay = document.createElement('div');
+            overlay.className = 'sidebar-overlay';
+            document.body.appendChild(overlay);
+            
+            toggleBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            // Close when clicking nav links
+            const navLinks = sidebar.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                });
+            });
+        }
+    });
+    </script>
 </body>
 </html>

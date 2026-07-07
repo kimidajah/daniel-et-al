@@ -26,6 +26,7 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:guru'])->group(function () {
         Route::get('/dashboard/guru', [DashboardController::class, 'guru'])->name('dashboard.guru');
         Route::post('/dashboard/guru/scan-qr', [AttendanceController::class, 'scanQr'])->name('guru.scan-qr');
+        Route::post('/dashboard/guru/izin-sakit', [AttendanceController::class, 'submitIzinSakit'])->name('guru.izin-sakit');
     });
 
     // Route khusus Admin Piket

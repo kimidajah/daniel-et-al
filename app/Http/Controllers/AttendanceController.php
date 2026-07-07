@@ -141,6 +141,67 @@ class AttendanceController extends Controller
     }
 
     /**
+     * Submit Sakit / Izin request (called by Guru).
+     */
+    public function submitIzinSakit(Request $request)
+    {
+        if (Auth::user()->role !== 'guru') {
+            return response()->json(['error' => 'Akses ditolak.'], 403);
+        }
+
+        $request->validate([
+            'type' => 'required|in:sakit,izin',
+            'notes' => 'required_if:type,izin|nullable|string|max:255',
+        ]);
+
+        $today = Carbon::today()->toDateString();
+
+        // Cek jika sudah ada catatan absensi hari ini (apapun status/tipenya)
+        $existing = Attendance::where('user_id', Auth::id())
+            ->whereDate('date', $today)
+            ->first();
+
+        if ($existing) {
+            $statusLabel = 'menunggu validasi';
+            if ($existing->status === 'approved') {
+                $statusLabel = 'telah disetujui';
+            } elseif ($existing->status === 'rejected') {
+                $statusLabel = 'telah ditolak';
+            }
+            
+            $typeLabel = $existing->attendance_type === 'hadir' ? 'hadir' : ($existing->attendance_type === 'sakit' ? 'sakit' : 'izin');
+
+            return response()->json([
+                'success' => false,
+                'message' => "Anda sudah merekam permohonan/absensi {$typeLabel} hari ini ({$statusLabel}).",
+            ], 400);
+        }
+
+        // Simpan permohonan Sakit / Izin
+        $attendance = Attendance::create([
+            'user_id' => Auth::id(),
+            'attendance_type' => $request->input('type'),
+            'date' => $today,
+            'scan_time' => now()->toTimeString(),
+            'latitude' => 0.0,
+            'longitude' => 0.0,
+            'status' => 'pending',
+            'notes' => $request->input('notes'),
+        ]);
+
+        $label = $request->input('type') === 'sakit' ? 'Sakit' : 'Izin';
+
+        return response()->json([
+            'success' => true,
+            'message' => "Permohonan {$label} berhasil diajukan dan menunggu validasi admin.",
+            'data' => [
+                'scan_time' => Carbon::parse($attendance->scan_time)->format('H:i:s'),
+                'status' => $attendance->status,
+            ]
+        ]);
+    }
+
+    /**
      * Validate attendance (approve/reject by Piket or TU).
      */
     public function validateAttendance(Request $request, Attendance $attendance)

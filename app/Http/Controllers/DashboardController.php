@@ -11,6 +11,43 @@ use Carbon\Carbon;
 class DashboardController extends Controller
 {
     /**
+     * Automatically mark teachers as Alfa (Absent) if they haven't submitted 
+     * attendance (present), sick (sakit), or leave (izin) request after 08:00 AM today.
+     */
+    public static function autoMarkAlpha()
+    {
+        $today = Carbon::today()->toDateString();
+        $nowTime = Carbon::now()->toTimeString();
+
+        // Batas waktu presensi adalah jam 08:00:00 pagi
+        if ($nowTime >= '08:00:00') {
+            // Dapatkan semua Guru
+            $teachers = User::where('role', 'guru')->get();
+
+            foreach ($teachers as $teacher) {
+                // Cek apakah sudah ada catatan kehadiran hari ini
+                $exists = Attendance::where('user_id', $teacher->id)
+                    ->whereDate('date', $today)
+                    ->exists();
+
+                if (!$exists) {
+                    // Otomatis tandai Alfa (Absen)
+                    Attendance::create([
+                        'user_id' => $teacher->id,
+                        'attendance_type' => 'alfa',
+                        'date' => $today,
+                        'scan_time' => '08:00:00',
+                        'latitude' => 0.0,
+                        'longitude' => 0.0,
+                        'status' => 'approved', // Alfa otomatis berstatus approved
+                        'notes' => 'Sistem: Otomatis Alpa karena tidak melakukan presensi/izin/sakit hingga batas waktu.',
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
      * Main dashboard router redirecting to role-specific dashboard.
      */
     public function index()
@@ -31,6 +68,9 @@ class DashboardController extends Controller
      */
     public function guru()
     {
+        // Jalankan auto mark alpa jika batas waktu terlampaui
+        self::autoMarkAlpha();
+
         $user = Auth::user();
         $today = Carbon::today()->toDateString();
         
@@ -41,6 +81,7 @@ class DashboardController extends Controller
         $monthlyAttendanceCount = Attendance::where('user_id', $user->id)
             ->whereMonth('date', now()->month)
             ->whereYear('date', now()->year)
+            ->where('attendance_type', 'hadir')
             ->where('status', 'approved')
             ->count();
             
@@ -52,8 +93,12 @@ class DashboardController extends Controller
      */
     public function tu()
     {
+        // Jalankan auto mark alpa jika batas waktu terlampaui
+        self::autoMarkAlpha();
+
         $totalTeachers = User::where('role', 'guru')->count();
         $presentToday = Attendance::whereDate('date', Carbon::today())
+            ->where('attendance_type', 'hadir')
             ->where('status', 'approved')
             ->count();
             
@@ -69,10 +114,14 @@ class DashboardController extends Controller
      */
     public function piket()
     {
+        // Jalankan auto mark alpa jika batas waktu terlampaui
+        self::autoMarkAlpha();
+
         $today = Carbon::today()->toDateString();
         $totalTeachers = User::where('role', 'guru')->count();
         
         $presentToday = Attendance::whereDate('date', $today)
+            ->where('attendance_type', 'hadir')
             ->where('status', 'approved')
             ->count();
             
@@ -105,6 +154,9 @@ class DashboardController extends Controller
      */
     public function kepala()
     {
+        // Jalankan auto mark alpa jika batas waktu terlampaui
+        self::autoMarkAlpha();
+        
         return view('dashboard.kepala');
     }
 }

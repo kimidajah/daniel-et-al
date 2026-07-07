@@ -29,8 +29,8 @@
             <thead>
                 <tr>
                     <th>Nama Guru</th>
-                    <th>Waktu Scan</th>
-                    <th>Koordinat Lokasi</th>
+                    <th>Waktu Pengajuan</th>
+                    <th>Keterangan / Metode</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
@@ -40,8 +40,20 @@
                 <tr id="attendance-row-{{ $attendance->id }}">
                     <td style="font-weight: 600;">{{ $attendance->user->name }}</td>
                     <td>{{ \Carbon\Carbon::parse($attendance->scan_time)->format('H:i:s') }} WIB</td>
-                    <td style="font-family: monospace; font-size: 0.85rem; color: var(--text-secondary);">
-                        {{ round($attendance->latitude, 5) }}, {{ round($attendance->longitude, 5) }}
+                    <td>
+                        @if($attendance->attendance_type === 'hadir')
+                            <span style="color: var(--color-success); font-weight: 500;">Hadir (QR Scan)</span>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem; font-family: monospace;">
+                                GPS: {{ round($attendance->latitude, 5) }}, {{ round($attendance->longitude, 5) }}
+                            </div>
+                        @elseif($attendance->attendance_type === 'sakit')
+                            <span style="color: var(--color-warning); font-weight: 500;">Sakit (Pengajuan)</span>
+                        @elseif($attendance->attendance_type === 'izin')
+                            <span style="color: var(--color-accent); font-weight: 500;">Izin (Pengajuan)</span>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem; font-style: italic;">
+                                Alasan: "{{ $attendance->notes }}"
+                            </div>
+                        @endif
                     </td>
                     <td><span class="badge badge-warning" id="status-badge-{{ $attendance->id }}">Menunggu Validasi</span></td>
                     <td>
@@ -71,7 +83,8 @@
             <thead>
                 <tr>
                     <th>Nama Guru</th>
-                    <th>Waktu Hadir</th>
+                    <th>Tipe</th>
+                    <th>Waktu Hadir/Scan</th>
                     <th>Status Validasi</th>
                     <th>Petugas Validasi</th>
                 </tr>
@@ -80,10 +93,21 @@
                 @forelse($validatedAttendances as $attendance)
                 <tr>
                     <td style="font-weight: 600;">{{ $attendance->user->name }}</td>
+                    <td>
+                        @if($attendance->attendance_type === 'hadir')
+                            <span class="badge badge-success" style="background: rgba(16, 185, 129, 0.05); color: #34d399; border-color: rgba(16, 185, 129, 0.15);">Hadir</span>
+                        @elseif($attendance->attendance_type === 'sakit')
+                            <span class="badge badge-warning" style="background: rgba(245, 158, 11, 0.05); color: #fbbf24; border-color: rgba(245, 158, 11, 0.15);">Sakit</span>
+                        @elseif($attendance->attendance_type === 'izin')
+                            <span class="badge" style="background: rgba(59, 130, 246, 0.05); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.15);">Izin</span>
+                        @elseif($attendance->attendance_type === 'alfa')
+                            <span class="badge badge-danger">Alpa</span>
+                        @endif
+                    </td>
                     <td>{{ \Carbon\Carbon::parse($attendance->scan_time)->format('H:i:s') }} WIB</td>
                     <td>
                         @if($attendance->status === 'approved')
-                            <span class="badge badge-success">Disetujui</span>
+                            <span class="badge badge-success">Disetujui / Sah</span>
                         @else
                             <span class="badge badge-danger">Ditolak</span>
                         @endif
@@ -92,7 +116,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="4" style="text-align: center; color: var(--text-secondary); padding: 2rem;">Belum ada laporan kehadiran tervalidasi hari ini.</td>
+                    <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 2rem;">Belum ada laporan kehadiran tervalidasi hari ini.</td>
                 </tr>
                 @endforelse
             </tbody>

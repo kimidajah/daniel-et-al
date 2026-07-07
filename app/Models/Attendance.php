@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'user_id',
     'qr_token_id',
+    'attendance_type',
     'date',
     'scan_time',
     'latitude',

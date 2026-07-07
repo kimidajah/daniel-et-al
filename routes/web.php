@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AttendanceController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,29 +23,28 @@ Route::middleware(['auth'])->group(function () {
 
     // Route khusus Guru
     Route::middleware(['role:guru'])->group(function () {
-        Route::get('/dashboard/guru', function () {
-            return view('dashboard.guru');
-        })->name('dashboard.guru');
+        Route::get('/dashboard/guru', [DashboardController::class, 'guru'])->name('dashboard.guru');
+        Route::post('/dashboard/guru/scan-qr', [AttendanceController::class, 'scanQr'])->name('guru.scan-qr');
     });
 
     // Route khusus Admin Piket
     Route::middleware(['role:piket'])->group(function () {
-        Route::get('/dashboard/piket', function () {
-            return view('dashboard.piket');
-        })->name('dashboard.piket');
+        Route::get('/dashboard/piket', [DashboardController::class, 'piket'])->name('dashboard.piket');
     });
 
     // Route khusus Tata Usaha (TU)
     Route::middleware(['role:tu'])->group(function () {
-        Route::get('/dashboard/tu', function () {
-            return view('dashboard.tu');
-        })->name('dashboard.tu');
+        Route::get('/dashboard/tu', [DashboardController::class, 'tu'])->name('dashboard.tu');
+        Route::post('/dashboard/tu/generate-qr', [AttendanceController::class, 'generateQr'])->name('tu.generate-qr');
+        Route::get('/dashboard/tu/active-qr', [AttendanceController::class, 'getActiveQr'])->name('tu.active-qr');
     });
 
     // Route khusus Kepala Sekolah
     Route::middleware(['role:kepala_sekolah'])->group(function () {
-        Route::get('/dashboard/kepala', function () {
-            return view('dashboard.kepala');
-        })->name('dashboard.kepala');
+        Route::get('/dashboard/kepala', [DashboardController::class, 'kepala'])->name('dashboard.kepala');
     });
+
+    // Route Validasi Absensi (bisa diakses Piket & TU)
+    Route::post('/dashboard/attendance/{attendance}/validate', [AttendanceController::class, 'validateAttendance'])->name('attendance.validate');
 });
+

@@ -552,3 +552,65 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Live QR Scanner Custom UI */
+#reader {
+    width: 100%;
+    min-width: 280px;
+    max-width: 320px;
+    height: 320px;
+    background-color: #000;
+}
+
+/* Ensure the video feeds fit correctly inside our rounded frame */
+#reader video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Scanning line laser animation */
+.scanner-laser {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,1) 50%, rgba(59,130,246,0) 100%);
+    box-shadow: 0 0 10px rgba(59,130,246,0.8);
+    animation: laser-anim 2.5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 5;
+}
+
+@keyframes laser-anim {
+    0% { top: 0%; }
+    50% { top: calc(100% - 4px); }
+    100% { top: 0%; }
+}
+
+/* Custom loading spinner */
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.05);
+    border-top: 3px solid var(--color-accent);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Slow heartbeat pulse for SVG placeholders */
+@keyframes pulse-slow {
+    0%, 100% { transform: scale(1); opacity: 0.15; }
+    50% { transform: scale(1.05); opacity: 0.3; }
+}
+
+.empty-row td {
+    border-bottom: none !important;
+}
+

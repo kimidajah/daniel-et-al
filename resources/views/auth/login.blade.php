@@ -42,6 +42,7 @@
     </style>
 </head>
 <body>
+    <canvas id="fireflies-canvas"></canvas>
     <div class="bg-glow"></div>
     <div class="bg-glow-secondary"></div>
 
@@ -89,6 +90,117 @@
             document.getElementById('email').value = email;
             document.getElementById('password').value = 'password';
         }
+
+        // Glowing Fireflies Background Animation
+        (function() {
+            const canvas = document.getElementById('fireflies-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            class Firefly {
+                constructor() {
+                    this.reset();
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                }
+
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.radius = Math.random() * 1.6 + 0.8; // 0.8px to 2.4px
+                    this.vx = (Math.random() - 0.5) * 0.25;
+                    this.vy = (Math.random() - 0.5) * 0.25;
+                    this.alpha = Math.random();
+                    this.targetAlpha = Math.random() * 0.8 + 0.2;
+                    this.alphaSpeed = Math.random() * 0.015 + 0.005;
+                    
+                    // Warm golden amber tones with a touch of soft blue matching the accent logo
+                    const colors = [
+                        'rgba(253, 224, 71, ', // Yellow/Gold
+                        'rgba(245, 158, 11, ', // Amber
+                        'rgba(251, 146, 60, ', // Orange
+                        'rgba(96, 165, 250, '  // Soft light blue accent
+                    ];
+                    // 80% warm colors, 20% blue accent
+                    this.colorBase = Math.random() > 0.2 
+                        ? colors[Math.floor(Math.random() * 3)] 
+                        : colors[3];
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Wrap boundaries
+                    if (this.x < -10 || this.x > width + 10 || this.y < -10 || this.y > height + 10) {
+                        this.reset();
+                        const edge = Math.floor(Math.random() * 4);
+                        if (edge === 0) { this.x = -5; this.y = Math.random() * height; }
+                        else if (edge === 1) { this.x = width + 5; this.y = Math.random() * height; }
+                        else if (edge === 2) { this.x = Math.random() * width; this.y = -5; }
+                        else { this.x = Math.random() * width; this.y = height + 5; }
+                    }
+
+                    // Opacity fluctuation (flicker)
+                    if (Math.abs(this.alpha - this.targetAlpha) < 0.05) {
+                        this.targetAlpha = Math.random() * 0.8 + 0.2;
+                        this.alphaSpeed = Math.random() * 0.01 + 0.005;
+                    }
+
+                    if (this.alpha < this.targetAlpha) {
+                        this.alpha += this.alphaSpeed;
+                    } else {
+                        this.alpha -= this.alphaSpeed;
+                    }
+
+                    this.alpha = Math.max(0.01, Math.min(1, this.alpha));
+                }
+
+                draw() {
+                    ctx.beginPath();
+                    
+                    // Firefly glowing particle gradient
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.radius * 6
+                    );
+                    
+                    gradient.addColorStop(0, this.colorBase + this.alpha + ')');
+                    gradient.addColorStop(0.2, this.colorBase + (this.alpha * 0.4) + ')');
+                    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.arc(this.x, this.y, this.radius * 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            const fireflies = [];
+            // responsive density
+            const density = Math.min(Math.floor((width * height) / 18000), 75);
+            
+            for (let i = 0; i < density; i++) {
+                fireflies.push(new Firefly());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < fireflies.length; i++) {
+                    fireflies[i].update();
+                    fireflies[i].draw();
+                }
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        })();
     </script>
 </body>
 </html>

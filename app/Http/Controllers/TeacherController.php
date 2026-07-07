@@ -22,6 +22,7 @@ class TeacherController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
             'nip' => 'nullable|string|max:30|unique:teacher_profiles,nip',
             'subject' => 'required|string|max:255',
         ]);
@@ -29,7 +30,7 @@ class TeacherController extends Controller
         $user = User::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
-            'password' => bcrypt('password'), // password default
+            'password' => bcrypt($request->input('password')),
             'role' => 'guru',
         ]);
 
@@ -60,14 +61,21 @@ class TeacherController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $teacher->id,
+            'password' => 'nullable|string|min:6|confirmed',
             'nip' => 'nullable|string|max:30|unique:teacher_profiles,nip,' . $profileId,
             'subject' => 'required|string|max:255',
         ]);
 
-        $teacher->update([
+        $userData = [
             'name' => $request->input('name'),
             'email' => $request->input('email'),
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $userData['password'] = bcrypt($request->input('password'));
+        }
+
+        $teacher->update($userData);
 
         $teacher->teacherProfile()->updateOrCreate(
             ['user_id' => $teacher->id],

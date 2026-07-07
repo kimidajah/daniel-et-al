@@ -77,6 +77,15 @@
                 <label class="form-label">Mata Pelajaran / Bidang</label>
                 <input type="text" class="form-control" id="teacher-subject" placeholder="Contoh: Matematika" required>
             </div>
+            <div class="form-group">
+                <label class="form-label" id="label-password">Password</label>
+                <input type="password" class="form-control" id="teacher-password" placeholder="Masukkan password (minimal 6 karakter)" required>
+                <small id="password-help" style="display: none; color: var(--text-muted); font-size: 0.75rem; margin-top: 0.35rem;"></small>
+            </div>
+            <div class="form-group">
+                <label class="form-label" id="label-password-confirmation">Konfirmasi Password</label>
+                <input type="password" class="form-control" id="teacher-password-confirmation" placeholder="Ulangi password" required>
+            </div>
             
             <div style="display: flex; gap: 1rem;">
                 <button type="submit" id="btn-submit-teacher" class="btn btn-primary">Simpan Data Guru</button>
@@ -163,6 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const teacherEmailInput = document.getElementById('teacher-email');
     const teacherNipInput = document.getElementById('teacher-nip');
     const teacherSubjectInput = document.getElementById('teacher-subject');
+    const teacherPasswordInput = document.getElementById('teacher-password');
+    const labelPassword = document.getElementById('label-password');
+    const passwordHelp = document.getElementById('password-help');
+    const teacherPasswordConfirmationInput = document.getElementById('teacher-password-confirmation');
+    const labelPasswordConfirmation = document.getElementById('label-password-confirmation');
     
     const cardTitle = document.getElementById('form-card-title');
     const btnSubmitTeacher = document.getElementById('btn-submit-teacher');
@@ -314,11 +328,20 @@ document.addEventListener('DOMContentLoaded', function() {
             teacherEmailInput.value = email;
             teacherNipInput.value = nip;
             teacherSubjectInput.value = subject;
+            teacherPasswordInput.value = ""; // clear password field for editing
+            teacherPasswordInput.required = false; // optional for edit
+            teacherPasswordConfirmationInput.value = "";
+            teacherPasswordConfirmationInput.required = false;
 
             // Change form title and buttons
             cardTitle.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg> Edit Data Guru`;
             btnSubmitTeacher.innerText = "Update Data Guru";
             btnCancelEdit.style.display = 'block';
+            
+            labelPassword.innerText = "Password (Opsional)";
+            passwordHelp.innerText = "Kosongkan jika tidak ingin mengubah password.";
+            passwordHelp.style.display = "block";
+            labelPasswordConfirmation.innerText = "Konfirmasi Password (Opsional)";
 
             // Scroll to the form view
             document.getElementById('form-teacher-card').scrollIntoView({ behavior: 'smooth' });
@@ -331,10 +354,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function resetForm() {
         formTeacher.reset();
         teacherIdInput.value = "";
+        teacherPasswordInput.required = true; // required for new
+        teacherPasswordConfirmationInput.required = true;
         
         cardTitle.innerHTML = `<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg> Tambah Guru Baru`;
         btnSubmitTeacher.innerText = "Simpan Data Guru";
         btnCancelEdit.style.display = 'none';
+        
+        labelPassword.innerText = "Password";
+        passwordHelp.style.display = "none";
+        labelPasswordConfirmation.innerText = "Konfirmasi Password";
     }
 
     // Handle form submit (Create or Update)
@@ -348,6 +377,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const email = teacherEmailInput.value;
         const nip = teacherNipInput.value;
         const subject = teacherSubjectInput.value;
+        const password = teacherPasswordInput.value;
+        const passwordConfirmation = teacherPasswordConfirmationInput.value;
+
+        // Validasi kecocokan di sisi client dulu agar cepat
+        if (password !== passwordConfirmation) {
+            showNotification("Konfirmasi password tidak cocok dengan password yang dimasukkan.", 'error');
+            return;
+        }
 
         btnSubmitTeacher.disabled = true;
         btnSubmitTeacher.innerText = isEdit ? "Memperbarui..." : "Menyimpan...";
@@ -359,7 +396,9 @@ document.addEventListener('DOMContentLoaded', function() {
             name: name,
             email: email,
             nip: nip,
-            subject: subject
+            subject: subject,
+            password: password,
+            password_confirmation: passwordConfirmation
         };
 
         if (isEdit) {

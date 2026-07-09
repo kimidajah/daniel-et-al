@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masuk - DiAbsen+</title>
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <script>
+        // Apply theme early to prevent FOUC (flash of unstyled content)
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            document.documentElement.classList.add('light-theme');
+        } else {
+            document.documentElement.classList.remove('light-theme');
+        }
+    </script>
     <style>
         .quick-login-title {
             color: var(--text-secondary);
@@ -22,7 +30,7 @@
             gap: 0.5rem;
         }
         .btn-quick {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--bg-user-card);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             font-size: 0.75rem;
@@ -35,8 +43,8 @@
             font-weight: 500;
         }
         .btn-quick:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.15);
+            background: var(--bg-input-focus);
+            border-color: var(--card-hover-border);
             color: var(--text-primary);
         }
     </style>
@@ -45,6 +53,20 @@
     <canvas id="fireflies-canvas"></canvas>
     <div class="bg-glow"></div>
     <div class="bg-glow-secondary"></div>
+
+    <!-- Theme Switch Button (Floating top right) -->
+    <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10;">
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme" style="background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 0.5rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--bg-card); border: 1px solid var(--border-color); width: 40px; height: 40px; box-shadow: var(--shadow-premium); transition: all 0.2s;">
+            <!-- Sun Icon (shown in dark theme) -->
+            <svg id="theme-toggle-light-icon" class="theme-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+            <!-- Moon Icon (shown in light theme) -->
+            <svg id="theme-toggle-dark-icon" class="theme-icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display: none;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+        </button>
+    </div>
 
     <div class="login-container">
         <div class="login-card">
@@ -201,6 +223,41 @@
 
             animate();
         })();
+    </script>
+
+    <script>
+        // Theme Toggle Functionality
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+
+        function updateIcons() {
+            if (themeToggleBtn && lightIcon && darkIcon) {
+                if (document.documentElement.classList.contains('light-theme')) {
+                    lightIcon.style.display = 'none';
+                    darkIcon.style.display = 'block';
+                } else {
+                    lightIcon.style.display = 'block';
+                    darkIcon.style.display = 'none';
+                }
+            }
+        }
+
+        // Initialize icons on load
+        updateIcons();
+
+        if (themeToggleBtn) {
+            themeToggleBtn.addEventListener('click', function() {
+                if (document.documentElement.classList.contains('light-theme')) {
+                    document.documentElement.classList.remove('light-theme');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.classList.add('light-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+                updateIcons();
+            });
+        }
     </script>
 </body>
 </html>

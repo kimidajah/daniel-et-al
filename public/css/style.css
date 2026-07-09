@@ -23,6 +23,57 @@
     
     --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
     --shadow-inset: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+
+    /* Newly introduced variables for light/dark abstraction */
+    --bg-glass-overlay: rgba(11, 15, 25, 0.6);
+    --bg-user-card: rgba(255, 255, 255, 0.02);
+    --bg-input: rgba(255, 255, 255, 0.03);
+    --bg-input-focus: rgba(255, 255, 255, 0.05);
+    --bg-nav-hover: rgba(255, 255, 255, 0.04);
+    --bg-table-header: rgba(255, 255, 255, 0.02);
+    --border-table-row: rgba(255, 255, 255, 0.03);
+    --bg-qr-dashed: rgba(255, 255, 255, 0.01);
+    --border-qr-dashed: rgba(255, 255, 255, 0.08);
+    --bg-spinner-border: rgba(255, 255, 255, 0.05);
+    --card-hover-border: rgba(255, 255, 255, 0.1);
+
+    --nav-active-color: #60a5fa;
+    --nav-active-bg: rgba(59, 130, 246, 0.08);
+    --nav-active-border: rgba(59, 130, 246, 0.15);
+}
+
+:root.light-theme {
+    --bg-primary: #f8fafc; /* slate 50 */
+    --bg-secondary: #ffffff; /* white */
+    --bg-card: rgba(255, 255, 255, 0.85); /* translucent card */
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-focus: #3b82f6;
+    
+    --text-primary: #0f172a; /* slate 900 */
+    --text-secondary: #475569; /* slate 600 */
+    --text-muted: #94a3b8; /* slate 400 */
+    
+    --color-accent: #3b82f6;
+    --color-accent-hover: #1d4ed8;
+    
+    --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+    --shadow-inset: inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+
+    --bg-glass-overlay: rgba(15, 23, 42, 0.3);
+    --bg-user-card: rgba(0, 0, 0, 0.02);
+    --bg-input: rgba(0, 0, 0, 0.02);
+    --bg-input-focus: rgba(0, 0, 0, 0.01);
+    --bg-nav-hover: rgba(0, 0, 0, 0.04);
+    --bg-table-header: rgba(0, 0, 0, 0.01);
+    --border-table-row: rgba(0, 0, 0, 0.03);
+    --bg-qr-dashed: rgba(0, 0, 0, 0.01);
+    --border-qr-dashed: rgba(0, 0, 0, 0.08);
+    --bg-spinner-border: rgba(0, 0, 0, 0.05);
+    --card-hover-border: rgba(0, 0, 0, 0.05);
+
+    --nav-active-color: #1d4ed8;
+    --nav-active-bg: rgba(59, 130, 246, 0.08);
+    --nav-active-border: rgba(59, 130, 246, 0.2);
 }
 
 * {
@@ -41,6 +92,14 @@ body {
     overflow-x: hidden;
 }
 
+/* Premium transition rule for all key layout components */
+body, aside, main, header, .widget-card, .section-card, td, th, .form-control, .nav-link, .btn-quick, .sidebar-user, .theme-toggle-btn {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Background Gradients */
 .bg-glow {
     position: fixed;
@@ -48,7 +107,7 @@ body {
     left: -20%;
     width: 60%;
     height: 60%;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(0,0,0,0) 70%);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, rgba(0,0,0,0) 70%);
     z-index: -1;
     pointer-events: none;
     filter: blur(80px);
@@ -60,7 +119,7 @@ body {
     right: -20%;
     width: 60%;
     height: 60%;
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, rgba(0,0,0,0) 70%);
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.06) 0%, rgba(0,0,0,0) 70%);
     z-index: -1;
     pointer-events: none;
     filter: blur(80px);
@@ -102,7 +161,7 @@ body {
 
 .login-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--card-hover-border);
 }
 
 .login-header {
@@ -144,7 +203,7 @@ body {
 
 .form-control {
     width: 100%;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 0.85rem 1rem;
@@ -157,7 +216,7 @@ body {
 .form-control:focus {
     outline: none;
     border-color: var(--border-focus);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-input-focus);
     box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
 }
 
@@ -230,7 +289,7 @@ body {
 }
 
 .sidebar-user {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-user-card);
     border: 1px solid var(--border-color);
     border-radius: 16px;
     padding: 1rem;
@@ -296,13 +355,13 @@ body {
 
 .nav-link:hover, .nav-link.active {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--bg-nav-hover);
 }
 
 .nav-link.active {
-    background: rgba(59, 130, 246, 0.08);
-    color: #60a5fa;
-    border: 1px solid rgba(59, 130, 246, 0.15);
+    background: var(--nav-active-bg);
+    color: var(--nav-active-color);
+    border: 1px solid var(--nav-active-border);
 }
 
 .nav-logout {
@@ -360,7 +419,7 @@ body {
 
 .widget-card:hover {
     transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.09);
+    border-color: var(--card-hover-border);
 }
 
 .widget-title {
@@ -412,7 +471,7 @@ body {
 }
 
 .custom-table th {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-table-header);
     border-bottom: 1px solid var(--border-color);
     padding: 1rem;
     font-size: 0.8rem;
@@ -424,7 +483,7 @@ body {
 
 .custom-table td {
     padding: 1.2rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-table-row);
     font-size: 0.95rem;
     color: var(--text-primary);
 }
@@ -468,8 +527,8 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2.5rem;
-    background: rgba(255, 255, 255, 0.01);
-    border: 2px dashed rgba(255, 255, 255, 0.08);
+    background: var(--bg-qr-dashed);
+    border: 2px dashed var(--border-qr-dashed);
     border-radius: 16px;
     margin-top: 1rem;
 }
@@ -590,7 +649,7 @@ body {
 
 /* Custom loading spinner */
 .spinner {
-    border: 3px solid rgba(255, 255, 255, 0.05);
+    border: 3px solid var(--bg-spinner-border);
     border-top: 3px solid var(--color-accent);
     border-radius: 50%;
     width: 36px;
@@ -621,7 +680,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(11, 15, 25, 0.6);
+    background: var(--bg-glass-overlay);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 999;
@@ -660,7 +719,7 @@ body {
         display: flex !important;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: var(--bg-input) !important;
         border: 1px solid var(--border-color) !important;
         color: var(--text-primary) !important;
         cursor: pointer;

@@ -105,7 +105,7 @@ class AttendanceController extends Controller
             ->whereDate('date', $today)
             ->first();
 
-        if ($existingAttendance) {
+        if ($existingAttendance && $existingAttendance->attendance_type !== 'alfa') {
             $statusText = 'menunggu validasi';
             if ($existingAttendance->status === 'approved') {
                 $statusText = 'telah disetujui';
@@ -117,6 +117,27 @@ class AttendanceController extends Controller
                 'success' => false,
                 'message' => "Anda sudah mengirimkan absensi hari ini dan statusnya saat ini {$statusText}.",
             ], 400);
+        }
+
+        if ($existingAttendance && $existingAttendance->attendance_type === 'alfa') {
+            $existingAttendance->update([
+                'qr_token_id' => $qrToken->id,
+                'attendance_type' => 'hadir',
+                'scan_time' => now()->toTimeString(),
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'status' => 'pending',
+                'notes' => 'Diperbarui oleh Guru dari status Alpa otomatis.',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Absensi berhasil terekam (memperbarui status Alpa otomatis) dan sekarang menunggu validasi oleh Admin.',
+                'data' => [
+                    'scan_time' => Carbon::parse($existingAttendance->scan_time)->format('H:i:s'),
+                    'status' => $existingAttendance->status,
+                ]
+            ]);
         }
 
         // Simpan data absensi
@@ -161,7 +182,7 @@ class AttendanceController extends Controller
             ->whereDate('date', $today)
             ->first();
 
-        if ($existing) {
+        if ($existing && $existing->attendance_type !== 'alfa') {
             $statusLabel = 'menunggu validasi';
             if ($existing->status === 'approved') {
                 $statusLabel = 'telah disetujui';
@@ -177,6 +198,26 @@ class AttendanceController extends Controller
             ], 400);
         }
 
+        $label = $request->input('type') === 'sakit' ? 'Sakit' : 'Izin';
+
+        if ($existing && $existing->attendance_type === 'alfa') {
+            $existing->update([
+                'attendance_type' => $request->input('type'),
+                'scan_time' => now()->toTimeString(),
+                'status' => 'pending',
+                'notes' => 'Diperbarui oleh Guru dari status Alpa otomatis. Alasan: ' . ($request->input('notes') ?? '-'),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Permohonan {$label} berhasil diajukan (memperbarui status Alpa otomatis) dan menunggu validasi admin.",
+                'data' => [
+                    'scan_time' => Carbon::parse($existing->scan_time)->format('H:i:s'),
+                    'status' => $existing->status,
+                ]
+            ]);
+        }
+
         // Simpan permohonan Sakit / Izin
         $attendance = Attendance::create([
             'user_id' => Auth::id(),
@@ -188,8 +229,6 @@ class AttendanceController extends Controller
             'status' => 'pending',
             'notes' => $request->input('notes'),
         ]);
-
-        $label = $request->input('type') === 'sakit' ? 'Sakit' : 'Izin';
 
         return response()->json([
             'success' => true,

@@ -59,7 +59,15 @@
     </div>
 </div>
 
-@if(!$todayAttendance)
+@if(!$todayAttendance || $todayAttendance->attendance_type === 'alfa')
+    @if($todayAttendance && $todayAttendance->attendance_type === 'alfa')
+        <div style="grid-column: 1 / -1; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.18); color: #f87171; padding: 1rem; border-radius: 16px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink: 0;"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div>
+                <strong>Sistem: Status Alpa Otomatis Aktif.</strong> Anda ditandai Alpa karena belum melakukan presensi hari ini. Silakan pindai QR Code di bawah untuk masuk kerja dan memperbarui kehadiran.
+            </div>
+        </div>
+    @endif
     <div class="form-row">
         <!-- Card Scan QR -->
         <div class="section-card" style="margin-bottom: 0;">
@@ -217,7 +225,7 @@
 <!-- Load html5-qrcode Library via CDN -->
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-@if(!$todayAttendance)
+@if(!$todayAttendance || $todayAttendance->attendance_type === 'alfa')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const btnStart = document.getElementById('btn-start-scanner');

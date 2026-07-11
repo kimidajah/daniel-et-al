@@ -35,7 +35,7 @@ class AttendanceController extends Controller
             'success' => true,
             'token' => $qrToken->token,
             'expires_at' => $qrToken->expires_at->toIso8601String(),
-            'expires_in_seconds' => now()->diffInSeconds($expiresAt),
+            'expires_in_seconds' => (int) now()->diffInSeconds($expiresAt),
         ]);
     }
 
@@ -56,7 +56,7 @@ class AttendanceController extends Controller
             'active' => true,
             'token' => $activeToken->token,
             'expires_at' => $activeToken->expires_at->toIso8601String(),
-            'expires_in_seconds' => now()->diffInSeconds($activeToken->expires_at),
+            'expires_in_seconds' => (int) now()->diffInSeconds($activeToken->expires_at),
         ]);
     }
 

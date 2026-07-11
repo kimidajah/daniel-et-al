@@ -266,10 +266,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateTimerText(sec) {
-        const mins = Math.floor(sec / 60);
-        const secs = sec % 60;
+        const totalSeconds = Math.floor(sec);
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = totalSeconds % 60;
         timerVal.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        timerVal.style.color = sec < 60 ? "var(--color-danger)" : "var(--color-warning)";
+        timerVal.style.color = totalSeconds < 60 ? "var(--color-danger)" : "var(--color-warning)";
         qrCanvas.style.opacity = "1";
     }
 
